@@ -58,12 +58,9 @@ fn main() {
       return
     }
   };
-  println!("{}", files.len());
 
-  let success ={
-    // let _guard = flame::start_guard("cpu-heavy calculation");
-    shortest_edit_sequence(&files[0], &files[1])
-  };
-  // flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
-  println!("Success? {}", success);
+  match shortest_edit_sequence(&files[0], &files[1]){
+    Ok(success) =>   println!("Success? {:?}", success.difference),
+    Err(e) => println!("{}", e)
+  }
 }
