@@ -1,21 +1,21 @@
 extern crate clap;
 extern crate diff;
 
-use diff::{shortest_edit_sequence};
 use clap::{App, Arg};
+use diff::{diff_greedy, Edit, print_differences};
 use std::fs;
 
-fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error>{
+fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
   let mut files = Vec::new();
 
-  match fs::read_to_string(file_one){
+  match fs::read_to_string(file_one) {
     Ok(file) => files.push(file),
-    Err(err) => return Err(err)
+    Err(err) => return Err(err),
   };
 
-  match fs::read_to_string(file_two){
+  match fs::read_to_string(file_two) {
     Ok(file) => files.push(file),
-    Err(err) => return Err(err)
+    Err(err) => return Err(err),
   };
 
   Ok(files)
@@ -31,9 +31,10 @@ fn main() {
         .short("a")
         .long("algo")
         .value_name("algo")
-        .help("Sets the algorithm type to the \"greedy\" or \"linear\" version Myer's diff algorithm")
-        .required(false))
-    .arg(
+        .help(
+          "Sets the algorithm type to the \"greedy\" or \"linear\" version Myer's diff algorithm",
+        ).required(false),
+    ).arg(
       Arg::with_name("FILE1")
         .help("Original file")
         .required(true)
@@ -49,18 +50,20 @@ fn main() {
   let file_two = matches.value_of("FILE2").unwrap();
   let algo = matches.value_of("ALGORITHM").unwrap_or("greedy");
 
-  let files = match validate_files(file_one, file_two){
-    Ok(files) => {
-      files
-    },
+  let files = match validate_files(file_one, file_two) {
+    Ok(files) => files,
     Err(error) => {
       println!("Unable to open file_one {:?}", error);
-      return
+      return;
     }
   };
 
-  match shortest_edit_sequence(&files[0], &files[1]){
-    Ok(success) =>   println!("Success? {:?}", success.difference),
-    Err(e) => println!("{}", e)
-  }
+    let differences = match diff_greedy(&files[0], &files[1]) {
+        Ok(success) => success,
+        Err(e) =>  {
+            return;},
+    };
+
+  println!("{}", print_differences(&files[0], "delete", &differences["delete"]));
+  println!("{}", print_differences(&files[1], "insert", &differences["insert"]));
 }
