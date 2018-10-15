@@ -80,10 +80,6 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
     // above us or below us.
 
     // Let's find which operation, inserting or deleting gets us farther
-    println!("K={:?}", diff.k);
-    println!("difference={:?}", diff.difference);
-    println!("{:?}", furthest_path_at_D);
-    println!("{:?}", furthest_path_at_D[diff.k]);
     for position in [diff.k - 1, diff.k + 1].iter() {
       let mut x = furthest_path_at_D.get(*position);
       let mut y = x - position;
@@ -110,9 +106,6 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
         panic!("Oh no, this shouldn't happen at all.");
       }
     };
-    println!("newK= {:?}", newK);
-    println!("X= {}", furthest_path_at_D.get(newK));
-    println!("y= {}", furthest_path_at_D.get(newK) - newK);
     op = if newK == diff.k + 1 {
       Edit{
         edit: Operation::Insert,
@@ -151,10 +144,9 @@ fn simplify_edit_graph(editGraph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
     at: 0,
     to: 0,
   };
-  println!{"EditGraph \n{:?}", editGraph};
+
   for edit in editGraph {
     // If previous
-    println!("{:?}", edit);
     let mut operation_string = match edit.edit {
       Operation::Insert => String::from("insert"),
       Operation::Delete => String::from("delete"),
@@ -239,25 +231,31 @@ pub fn print_differences(string: &str, edit_type: &str, edits: &[Edit]) -> Strin
 
   let COLOUR = if edit_type == "insert" {GREEN}  else {RED};
   let mut response = String::new();
-
   if edits.len() == 0 {
     return string.to_string();
   }
-  let mut offset = 0;
-  let mut copy = string.to_string();
-  for edit in edits {
-    let end_colour_pos = offset + edit.to + 1;
-    let start_colour_pos = offset + edit.at;
-    println!("Start pos {:?}", start_colour_pos);
-    if (copy.len() > end_colour_pos){
-      copy.insert_str(end_colour_pos, ENDCOLOUR);
-    } else {
-      copy.push_str(ENDCOLOUR);
+
+  let mut edits_1 = edits.clone().to_vec();
+  edits_1.reverse();
+  let mut maybe_edit = edits_1.pop();
+
+  for (index, character) in string.chars().enumerate() {
+    match maybe_edit.clone() {
+      Some(edit) => {
+        if index == edit.at as usize {
+          response.push_str(COLOUR);
+        }
+        response.push(character);
+        if index == edit.to as usize {
+          response.push_str(ENDCOLOUR);
+        }
+      },
+      None => response.push(character)
     }
-    copy.insert_str(start_colour_pos, COLOUR);
-    offset += 2;
   }
-  return copy;
+  // response.replace("\n", "\[\n\]");
+  println!("{:?}", response);
+  return response;
 }
 
 pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {

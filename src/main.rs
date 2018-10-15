@@ -64,6 +64,6 @@ fn main() {
             return;},
     };
 
-  println!("{}", print_differences(&files[0], "delete", &differences["delete"]));
-  println!("{}", print_differences(&files[1], "insert", &differences["insert"]));
+  print!("{}", print_differences(&files[0], "delete", &differences["delete"]).chars());
+  print!("{}", print_differences(&files[1], "insert", &differences["insert"]));
 }
