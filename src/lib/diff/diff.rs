@@ -5,13 +5,6 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct differences {
-  pub difference: isize,
-  pub k: isize,
-  pub history: Vec<NegativeArray>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
 enum Operation {
   Insert,
   Delete,
@@ -49,7 +42,7 @@ fn split_string(string: &str) -> Vec<&str> {
   col[1..end].to_vec()
 }
 
-fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec<Edit> {
+fn generate_edit_graph(first: &str, second: &str, difference: isize, k: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
   // set constants to match algo
   let N = first.len() as isize;
   let M = second.len() as isize;
@@ -58,19 +51,20 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
   let second_chars = split_string(second);
   let first_chars = split_string(first);
 
-  if diff.difference == -1 {
+  if difference == -1 {
     return Vec::new();
   }
 
+  // Things we will need access to later
   let op: Edit;
+  let newK: isize;
   // Controlling borrowing scope by creating a closure
   {
-    let ref furthest_path_at_D = if diff.difference % 2 == 0 {
-      &diff.history[(diff.difference + 1) as usize]
+    let ref furthest_path_at_D = if difference % 2 == 0 {
+      &history[(difference + 1) as usize]
     } else {
-      &diff.history[diff.difference as usize]
+      &history[difference as usize]
     };
-
     // Let's set some state we need access outside of loop
     let mut bestK = None;
     let mut bestY = -1;
@@ -80,8 +74,8 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
     // above us or below us.
 
     // Let's find which operation, inserting or deleting gets us farther
-    for position in [diff.k - 1, diff.k + 1].iter() {
-      let mut x = furthest_path_at_D.get(*position);
+    for position in [k - 1, k + 1].iter() {
+      let mut x = furthest_path_at_D[*position];
       let mut y = x - position;
 
       while (0 <= x && x < N)
@@ -98,7 +92,7 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
       }
     }
 
-    let newK = match bestK { // This is ugly we should extract this to a function to hide it
+    newK = match bestK { // This is ugly we should extract this to a function to hide it
       Some(k) =>{
         k
       },
@@ -106,7 +100,7 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
         panic!("Oh no, this shouldn't happen at all.");
       }
     };
-    op = if newK == diff.k + 1 {
+    op = if newK == k + 1 {
       Edit{
         edit: Operation::Insert,
         at: bestY as usize,
@@ -119,13 +113,9 @@ fn generate_edit_graph(first: &str, second: &str, diff: &mut differences) -> Vec
         to: bestX as usize
       }
     };
-
-    diff.history.deref();
-    diff.k = newK;
-    diff.difference -= 1;
   }
 
-  let mut editGraph = generate_edit_graph(first, second, diff);
+  let mut editGraph = generate_edit_graph(first, second, difference - 1, newK, history);
   editGraph.push(op);
 
   editGraph
@@ -159,7 +149,7 @@ fn simplify_edit_graph(editGraph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
         .pop()
         .unwrap()
         .clone();
-      editRange.to = edit.at.clone();
+      editRange.to = edit.at;
       map.get_mut(&operation_string).unwrap().push(editRange);
     } else {
       map.get_mut(&operation_string).unwrap().push(edit.clone());
@@ -169,9 +159,7 @@ fn simplify_edit_graph(editGraph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
   map
 }
 
-
-
-pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<differences, String> {
+pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Vec<NegativeArray>), String> {
   let N = first.len() as isize;
   let M = second.len() as isize;
   let MAX = N + M;
@@ -206,11 +194,7 @@ pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<differences, 
       if x >= N && y >= M {
         let finalD = if d % 2 == 0 {d+1} else {d};
         history[finalD as usize] = v.clone();
-        return Ok(differences {
-          difference: d,
-          k: k,
-          history: history,
-        });
+        return Ok((d, k, history));
       }
       k += 2;
     }
@@ -248,27 +232,23 @@ pub fn print_differences(string: &str, edit_type: &str, edits: &[Edit]) -> Strin
         response.push(character);
         if index == edit.to as usize {
           response.push_str(ENDCOLOUR);
+          maybe_edit = edits_1.pop();
         }
       },
       None => response.push(character)
     }
   }
-  // response.replace("\n", "\[\n\]");
-  println!("{:?}", response);
   return response;
 }
 
 pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
-  let mut differences = match shortest_edit_sequence(first, second) {
+  let (difference, k, history) = match shortest_edit_sequence(first, second) {
     Ok(success) => success,
     Err(e) => {
       return Err("What the hell".to_string())
     },
   };
-  let mut new_differences = differences.clone();
-  new_differences.difference -= 1;
-  let editGraph = generate_edit_graph(first, second, &mut new_differences);
+  let editGraph = generate_edit_graph(first, second, difference - 1, k, history);
   let simpleEditGraph = simplify_edit_graph(editGraph);
-  println!("{:?}", simpleEditGraph);
   Ok(simpleEditGraph)
 }
