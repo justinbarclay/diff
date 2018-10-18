@@ -13,3 +13,4 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.32.0"
+time = "0.1"

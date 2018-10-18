@@ -1,9 +1,11 @@
+extern crate time;
+
 mod array;
 use array::NegativeArray;
 use std::collections::HashMap;
 use std::fmt;
 use std::ops::Deref;
-
+use time::now;
 #[derive(Debug, PartialEq, Clone)]
 enum Operation {
   Insert,
@@ -87,7 +89,7 @@ fn generate_edit_graph(first: &str, second: &str, difference: isize, k: isize, h
       }
       if x > bestX {
         bestK = Some(*position);
-        bestX = furthest_path_at_D.get(*position);
+        bestX = furthest_path_at_D[*position];
         bestY = bestX - position;
       }
     }
@@ -119,6 +121,85 @@ fn generate_edit_graph(first: &str, second: &str, difference: isize, k: isize, h
   editGraph.push(op);
 
   editGraph
+}
+
+fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, kz: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
+  // set constants to match algo
+  let N = first.len() as isize;
+  let M = second.len() as isize;
+  let MAX = N + M as isize;
+
+  let second_chars = split_string(second);
+  let first_chars = split_string(first);
+
+  // Things we will need access to later
+  let mut difference = diff;
+  let mut edit_graph = Vec::with_capacity(difference as usize);
+  let mut op: Edit;
+  let mut newK: isize;
+  let mut k = kz;
+  // Controlling borrowing scope by creating a closure
+
+  while difference > -1 {
+    let ref furthest_path_at_D = if difference % 2 == 0 {
+      &history[(difference + 1) as usize]
+    } else {
+      &history[difference as usize]
+    };
+    // Let's set some state we need access outside of loop
+    let mut bestK = None;
+    let mut bestY = -1;
+    let mut bestX = -1;
+    // Because we're traversing our history. We know as we step back in the history that to get to our current K
+    // it must be through either an insert or a delete. So it must be the K directly
+    // above us or below us.
+
+    // Let's find which operation, inserting or deleting gets us farther
+    for position in [k - 1, k + 1].iter() {
+      let mut x = furthest_path_at_D[*position];
+      let mut y = x - position;
+
+      while (0 <= x && x < N) && (0 <= y && y < M)
+        && first_chars[x as usize] == second_chars[y as usize] {
+        x += 1;
+        y += 1;
+      }
+      if x > bestX {
+        bestK = Some(*position);
+        bestX = furthest_path_at_D[*position];
+        bestY = bestX - position;
+      }
+    }
+
+    newK = match bestK { // This is ugly we should extract this to a function to hide it
+      Some(k) =>{
+        k
+      },
+      None => {
+        panic!("Oh no, this shouldn't happen at all.");
+      }
+    };
+    op = if newK == k + 1 {
+      Edit{
+        edit: Operation::Insert,
+        at: bestY as usize,
+        to: bestY as usize
+      }
+    } else {
+      Edit {
+        edit: Operation::Delete,
+        at: bestX as usize,
+        to: bestX as usize
+      }
+    };
+    edit_graph.push(op);
+
+    difference -= 1;
+    k = newK;
+  }
+
+  edit_graph.reverse();
+  edit_graph
 }
 
 // function concatEditGraph(editGraph){
@@ -242,13 +323,24 @@ pub fn print_differences(string: &str, edit_type: &str, edits: &[Edit]) -> Strin
 }
 
 pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
+  // let mut start = time::now();
   let (difference, k, history) = match shortest_edit_sequence(first, second) {
     Ok(success) => success,
     Err(e) => {
       return Err("What the hell".to_string())
     },
   };
-  let editGraph = generate_edit_graph(first, second, difference - 1, k, history);
+  // let mut finish = time::now();
+  // println!("{:}", finish - start);
+
+  // start = time::now();
+  let editGraph = generate_edit_graph_loop(first, second, difference - 1, k, history);
+  // finish = time::now();
+  // println!("{:}", finish - start);
+
+  // start = time::now();
   let simpleEditGraph = simplify_edit_graph(editGraph);
+  // finish = time::now();
+  // println!("{:}", finish - start);
   Ok(simpleEditGraph)
 }

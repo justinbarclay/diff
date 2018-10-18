@@ -1,5 +1,6 @@
 extern crate clap;
 extern crate diff;
+extern crate time;
 
 use clap::{App, Arg};
 use diff::{diff_greedy, Edit, print_differences};
