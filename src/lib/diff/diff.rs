@@ -35,91 +35,91 @@ fn split_string(string: &str) -> Vec<&str> {
   col[1..end].to_vec()
 }
 
-fn generate_edit_graph(first: &str, second: &str, difference: isize, diagonal: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
-  // set constants to match algo
-  let N = first.len() as isize;
-  let M = second.len() as isize;
-  let MAX = N + M as isize;
+// A recursive version of the function to generate an editgraph, doesn't run as well in rust as it did in JS
+// fn generate_edit_graph(first: &str, second: &str, difference: isize, diagonal: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
+//   // set constants to match algo
+//   let N = first.len() as isize;
+//   let M = second.len() as isize;
+//   let MAX = N + M as isize;
 
-  let second_chars = split_string(second);
-  let first_chars = split_string(first);
+//   let second_chars = split_string(second);
+//   let first_chars = split_string(first);
 
-  if difference == -1 {
-    return Vec::new();
-  }
+//   if difference == -1 {
+//     return Vec::new();
+//   }
 
-  // Things we will need access to later
-  let op: Edit;
-  let new_diagonal: isize;
-  // Controlling borrowing scope by creating a closure
-  {
-    let ref furthest_path_at_D = if difference % 2 == 0 {
-      &history[(difference + 1) as usize]
-    } else {
-      &history[difference as usize]
-    };
-    // Let's set some state we need access outside of loop
-    let mut best_diagonal = None;
-    let mut bestY = -1;
-    let mut bestX = -1;
-    // Because we're traversing our history. We know as we step back in the history that to get to our current K
-    // it must be through either an insert or a delete. So it must be the K directly
-    // above us or below us.
+//   // Things we will need access to later
+//   let op: Edit;
+//   let new_diagonal: isize;
+//   // Controlling borrowing scope by creating a closure
+//   {
+//     let ref furthest_path_at_D = if difference % 2 == 0 {
+//       &history[(difference + 1) as usize]
+//     } else {
+//       &history[difference as usize]
+//     };
+//     // Let's set some state we need access outside of loop
+//     let mut best_diagonal = None;
+//     let mut bestY = -1;
+//     let mut bestX = -1;
+//     // Because we're traversing our history. We know as we step back in the history that to get to our current K
+//     // it must be through either an insert or a delete. So it must be the K directly
+//     // above us or below us.
 
-    // Let's find which operation, inserting or deleting gets us farther
-    for position in [diagonal - 1, diagonal + 1].iter() {
-      let mut x = furthest_path_at_D[*position];
-      let mut y = x - position;
+//     // Let's find which operation, inserting or deleting gets us farther
+//     for position in [diagonal - 1, diagonal + 1].iter() {
+//       let mut x = furthest_path_at_D[*position];
+//       let mut y = x - position;
 
-      while (0 <= x && x < N)
-        && (0 <= y && y < M)
-        && first_chars[x as usize] == second_chars[y as usize]
-      {
-        x += 1;
-        y += 1;
-      }
-      if x > bestX {
-        best_diagonal = Some(*position);
-        bestX = furthest_path_at_D[*position];
-        bestY = bestX - position;
-      }
-    }
+//       while (0 <= x && x < N)
+//         && (0 <= y && y < M)
+//         && first_chars[x as usize] == second_chars[y as usize]
+//       {
+//         x += 1;
+//         y += 1;
+//       }
+//       if x > bestX {
+//         best_diagonal = Some(*position);
+//         bestX = furthest_path_at_D[*position];
+//         bestY = bestX - position;
+//       }
+//     }
 
-    new_diagonal = match best_diagonal { // This is ugly we should extract this to a function to hide it
-      Some(diagonal) =>{
-        diagonal
-      },
-      None => {
-        panic!("Oh no, this shouldn't happen at all.");
-      }
-    };
-      op = if new_diagonal == diagonal
-          + 1 {
-      Edit{
-        edit: Operation::Insert,
-        at: bestY as usize,
-        to: bestY as usize
-      }
-    } else {
-      Edit {
-        edit: Operation::Delete,
-        at: bestX as usize,
-        to: bestX as usize
-      }
-    };
-  }
+//     new_diagonal = match best_diagonal { // This is ugly we should extract this to a function to hide it
+//       Some(diagonal) =>{
+//         diagonal
+//       },
+//       None => {
+//         panic!("Oh no, this shouldn't happen at all.");
+//       }
+//     };
+//       op = if new_diagonal == diagonal
+//           + 1 {
+//       Edit{
+//         edit: Operation::Insert,
+//         at: bestY as usize,
+//         to: bestY as usize
+//       }
+//     } else {
+//       Edit {
+//         edit: Operation::Delete,
+//         at: bestX as usize,
+//         to: bestX as usize
+//       }
+//     };
+//   }
 
-  let mut editGraph = generate_edit_graph(first, second, difference - 1, new_diagonal, history);
-  editGraph.push(op);
+//   let mut editGraph = generate_edit_graph(first, second, difference - 1, new_diagonal, history);
+//   editGraph.push(op);
 
-  editGraph
-}
+//   editGraph
+// }
 
 fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_diagonal: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
   // set constants to match algo
   let N = first.len() as isize;
   let M = second.len() as isize;
-  let MAX = N + M as isize;
 
   let second_chars = split_string(second);
   let first_chars = split_string(first);
@@ -133,33 +133,33 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
   // Controlling borrowing scope by creating a closure
 
   while difference > -1 {
-    let ref furthest_path_at_D = if difference % 2 == 0 {
+    let furthest_path_at_d = if difference % 2 == 0 {
       &history[(difference + 1) as usize]
     } else {
       &history[difference as usize]
     };
     // Let's set some state we need access outside of loop
     let mut best_diagonal = None;
-    let mut bestY = -1;
-    let mut bestX = -1;
+    let mut best_y = -1;
+    let mut best_x = -1;
     // Because we're traversing our history. We know as we step back in the history that to get to our current K
     // it must be through either an insert or a delete. So it must be the K directly
     // above us or below us.
 
     // Let's find which operation, inserting or deleting gets us farther
     for position in [diagonal - 1, diagonal + 1].iter() {
-      let mut x = furthest_path_at_D[*position];
+      let mut x = furthest_path_at_d[*position];
       let mut y = x - position;
 
       while (0 <= x && x < N) && (0 <= y && y < M)
         && first_chars[x as usize] == second_chars[y as usize] {
-        x += 1;
-        y += 1;
-      }
-      if x > bestX {
+          x += 1;
+          y += 1;
+        }
+      if x > best_x {
         best_diagonal = Some(*position);
-        bestX = furthest_path_at_D[*position];
-        bestY = bestX - position;
+        best_x = furthest_path_at_d[*position];
+        best_y = best_x - position;
       }
     }
 
@@ -174,14 +174,14 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
     op = if new_diagonal == diagonal + 1 {
       Edit{
         edit: Operation::Insert,
-        at: bestY as usize,
-        to: bestY as usize
+        at: best_y as usize,
+        to: best_y as usize
       }
     } else {
       Edit {
         edit: Operation::Delete,
-        at: bestX as usize,
-        to: bestX as usize
+        at: best_x as usize,
+        to: best_x as usize
       }
     };
     edit_graph.push(op);
