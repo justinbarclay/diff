@@ -3,7 +3,7 @@ extern crate diff;
 extern crate time;
 
 use clap::{App, Arg};
-use diff::{diff_greedy, Edit, print_differences};
+use diff::{diff_greedy, Edit, decorate_differences};
 use std::fs;
 
 fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
@@ -65,7 +65,7 @@ fn main() {
             return;},
     };
 
-  print!("{}", print_differences(&files[0], "delete", &differences["delete"]));
+  print!("{}", decorate_differences(&files[0], "delete", &differences["delete"]));
   print!("\n------------------\n");
-  print!("{}", print_differences(&files[1], "insert", &differences["insert"]));
+  println!("{}", decorate_differences(&files[1], "insert", &differences["insert"]));
 }
