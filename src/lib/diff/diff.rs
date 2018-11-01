@@ -116,7 +116,7 @@ fn split_string(string: &str) -> Vec<&str> {
 //   editGraph
 // }
 
-fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_diagonal: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
+fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_diagonal: isize, history: Vec<NegativeArray>) -> Result<Vec<Edit>, String> {
   // set constants to match algo
   let first_length = first.len() as isize;
   let second_length = second.len() as isize;
@@ -168,7 +168,7 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
         diagonal
       },
       None => {
-        panic!("Oh no, this shouldn't happen at all.");
+        return Err("Oh no, this shouldn't happen at all.".to_string());
       }
     };
     op = if new_diagonal == diagonal + 1 {
@@ -191,7 +191,7 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
   }
 
   edit_graph.reverse();
-  edit_graph
+  Ok(edit_graph)
 }
 
 // TODO: Turn HASHMAP into conrete type
@@ -338,7 +338,7 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit
     // println!("{:}", finish - start);
 
     // start = time::now();
-    let edit_graph = generate_edit_graph_loop(first, second, difference - 1, diagonal, history);
+    let edit_graph = generate_edit_graph_loop(first, second, difference - 1, diagonal, history)?;
     // finish = time::now();
     // println!("{:}", finish - start);
 
