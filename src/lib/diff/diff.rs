@@ -4,7 +4,6 @@ mod array;
 use array::NegativeArray;
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::Deref;
 use time::now;
 #[derive(Debug, PartialEq, Clone)]
 enum Operation {
@@ -195,39 +194,39 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
 }
 
 // TODO: Turn HASHMAP into conrete type
-fn simplify_edit_graph(editGraph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
+fn simplify_edit_graph(edit_graph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
   // simplifies an edit graph into a series of operation that describes ranges of deletes
   // or inserts
   let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
   map.insert(String::from("insert"), Vec::new());
   map.insert(String::from("delete"), Vec::new());
 
-  let mut previousEdit = Edit {
+  let mut previous_edit = Edit {
     edit: Operation::Null,
     at: 0,
     to: 0,
   };
 
-  for edit in editGraph {
+  for edit in edit_graph {
     // If previous
     let mut operation_string = match edit.edit {
       Operation::Insert => String::from("insert"),
       Operation::Delete => String::from("delete"),
       Operation::Null => String::from("null"),
     };
-    if previousEdit.edit == edit.edit && edit.at > 0 && previousEdit.at == edit.at - 1 {
-      let mut editRange = map
+    if previous_edit.edit == edit.edit && edit.at > 0 && previous_edit.at == edit.at - 1 {
+      let mut edit_range = map
         .get_mut(&operation_string)
         .unwrap()
         .pop()
         .unwrap()
         .clone();
-      editRange.to = edit.at;
-      map.get_mut(&operation_string).unwrap().push(editRange);
+      edit_range.to = edit.at;
+      map.get_mut(&operation_string).unwrap().push(edit_range);
     } else {
       map.get_mut(&operation_string).unwrap().push(edit.clone());
     }
-    previousEdit = edit;
+    previous_edit = edit;
   }
   map
 }
@@ -236,18 +235,17 @@ fn simplify_edit_graph(editGraph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
 pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Vec<NegativeArray>), String> {
   let N = first.len() as isize;
   let M = second.len() as isize;
-  let MAX = N + M;
+  let max = N + M;
 
   let second_chars = split_string(second);
   let first_chars = split_string(first);
 
-  let mut v = NegativeArray::new(MAX as isize);
+  let mut v = NegativeArray::new(max as isize);
   v[1] = 0;
-  let mut history: Vec<NegativeArray> = vec![NegativeArray::new(0); MAX as usize];
+  let mut history: Vec<NegativeArray> = vec![NegativeArray::new(0); max as usize];
 
-  for d in 0..MAX as isize {
+  for d in 0..max as isize {
     let mut diagonal = -d;
-
     while diagonal <= d {
       let mut x: isize;
       let mut y: isize;
@@ -266,8 +264,8 @@ pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize
 
       v[diagonal] = x;
       if x >= N && y >= M {
-        let finalD = if d % 2 == 0 {d+1} else {d};
-        history[finalD as usize] = v.clone();
+        let final_d = if d % 2 == 0 {d+1} else {d};
+        history[final_d as usize] = v.clone();
         return Ok((d, diagonal, history));
       }
       diagonal += 2;
@@ -279,21 +277,21 @@ pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize
       history[d as usize] = v.clone();
     }
   }
-  return Err("What the hell?".to_string());
+  Err("What the hell?".to_string())
 }
 
-pub fn print_differences(string: &str, edit_type: &str, edits: &[Edit]) -> String{
-  let RED = "\x1b[31m";
-  let ENDCOLOUR = "\x1b[0m";
-  let GREEN = "\x1b[32m";
+pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> String{
+  let red = "\x1b[31m";
+  let end_colour = "\x1b[0m";
+  let green = "\x1b[32m";
 
-  let COLOUR = if edit_type == "insert" {GREEN}  else {RED};
+  let colour = if edit_type == "insert" {green}  else {red};
   let mut response = String::new();
-  if edits.len() == 0 {
+  if edits.is_empty(){
     return string.to_string();
   }
 
-  let mut edits_1 = edits.clone().to_vec();
+  let mut edits_1 = edits.to_vec();
   edits_1.reverse();
   let mut maybe_edit = edits_1.pop();
 
@@ -301,39 +299,53 @@ pub fn print_differences(string: &str, edit_type: &str, edits: &[Edit]) -> Strin
     match maybe_edit.clone() {
       Some(edit) => {
         if index == edit.at as usize {
-          response.push_str(COLOUR);
+          response.push_str(colour);
         }
         response.push(character);
         if index == edit.to as usize {
-          response.push_str(ENDCOLOUR);
+          response.push_str(end_colour);
           maybe_edit = edits_1.pop();
         }
       },
       None => response.push(character)
     }
   }
-  return response;
+  response
 }
 
-pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
+pub fn
+  diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
   // let mut start = time::now();
-  let (difference, diagonal, history) = match shortest_edit_sequence(first, second) {
-    Ok(success) => success,
-    Err(e) => {
-      return Err("What the hell".to_string())
-    },
-  };
-  // let mut finish = time::now();
-  // println!("{:}", finish - start);
+  if first.len() == 0 && second.len() > 0{
+    println!("here be dragons");
+    let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
+    map.insert(String::from("insert"), vec![Edit{edit: Operation::Insert, at: 0, to: second.len()}; 1]);
+    map.insert(String::from("delete"), Vec::new());
+    Ok(map)
+  } else if first.len() > 0 && second.len() == 0{
+    let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
+    map.insert(String::from("delete"), vec![Edit{edit: Operation::Delete , at: 0, to: first.len()}; 1]);
+    map.insert(String::from("insert"), Vec::new());
+    Ok(map)
+  } else {
+    let (difference, diagonal, history) = match shortest_edit_sequence(first, second) {
+      Ok(success) => success,
+      Err(_e) => {
+        return Err("What the hell".to_string())
+      },
+    };
+    // let mut finish = time::now();
+    // println!("{:}", finish - start);
 
-  // start = time::now();
-  let editGraph = generate_edit_graph_loop(first, second, difference - 1, diagonal, history);
-  // finish = time::now();
-  // println!("{:}", finish - start);
+    // start = time::now();
+    let edit_graph = generate_edit_graph_loop(first, second, difference - 1, diagonal, history);
+    // finish = time::now();
+    // println!("{:}", finish - start);
 
-  // start = time::now();
-  let simpleEditGraph = simplify_edit_graph(editGraph);
-  // finish = time::now();
-  // println!("{:}", finish - start);
-  Ok(simpleEditGraph)
+    // start = time::now();
+    let simple_edit_graph = simplify_edit_graph(edit_graph);
+    // finish = time::now();
+    // println!("{:}", finish - start);
+    Ok(simple_edit_graph)
+  }
 }
