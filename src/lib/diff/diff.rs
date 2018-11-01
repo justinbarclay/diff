@@ -328,12 +328,7 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit
     map.insert(String::from("insert"), Vec::new());
     Ok(map)
   } else {
-    let (difference, diagonal, history) = match shortest_edit_sequence(first, second) {
-      Ok(success) => success,
-      Err(_e) => {
-        return Err("What the hell".to_string())
-      },
-    };
+    let (difference, diagonal, history) = shortest_edit_sequence(first, second)?;
     // let mut finish = time::now();
     // println!("{:}", finish - start);
 
