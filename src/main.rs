@@ -3,7 +3,8 @@ extern crate diff;
 extern crate time;
 
 use clap::{App, Arg};
-use diff::{diff_greedy, Edit, print_differences};
+use std::collections::HashMap;
+use diff::{diff_greedy, decorate_differences, Edit};
 use std::fs;
 
 fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
@@ -13,7 +14,6 @@ fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io
     Ok(file) => files.push(file),
     Err(err) => return Err(err),
   };
-
   match fs::read_to_string(file_two) {
     Ok(file) => files.push(file),
     Err(err) => return Err(err),
@@ -49,7 +49,7 @@ fn main() {
 
   let file_one = matches.value_of("FILE1").unwrap();
   let file_two = matches.value_of("FILE2").unwrap();
-  let algo = matches.value_of("ALGORITHM").unwrap_or("greedy");
+  let _algo = matches.value_of("ALGORITHM").unwrap_or("greedy");
 
   let files = match validate_files(file_one, file_two) {
     Ok(files) => files,
@@ -59,13 +59,29 @@ fn main() {
     }
   };
 
-    let differences = match diff_greedy(&files[0], &files[1]) {
-        Ok(success) => success,
-        Err(e) =>  {
-            return;},
-    };
+  let split_file_one: Vec<&str> = files[0].split("\n").collect();
+  let split_file_two: Vec<&str> = files[1].split("\n").collect();
 
-  print!("{}", print_differences(&files[0], "delete", &differences["delete"]));
-  print!("\n------------------\n");
-  print!("{}", print_differences(&files[1], "insert", &differences["insert"]));
+  let mut result = String::new();
+
+  // for (index, line) in split_file_one.iter().enumerate() {
+  //   let differences = match diff_greedy(line, split_file_two[index]) {
+  //     Ok(success) => success,
+  //     Err(e) =>  {
+  //       println!("{:?}", e);
+  //       return;
+  //     },
+  //   };
+  //   result.push_str(&decorate_differences(line, "delete", &differences["delete"]));
+  //   result.push('\n');
+  //   result.push_str(&decorate_differences(split_file_two[index], "insert", &differences["insert"]));
+  // }
+  // println!("{}", result);
+
+  // let differences = match diff_greedy(&files[0], &files[1]) {
+  //   Ok(success) => success,
+  //   Err(_e) =>  {
+  //     return;
+  //   },
+  // };
 }
