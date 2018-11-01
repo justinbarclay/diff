@@ -5,6 +5,7 @@ use array::NegativeArray;
 use std::collections::HashMap;
 use std::fmt;
 use time::now;
+
 #[derive(Debug, PartialEq, Clone)]
 enum Operation {
   Insert,
@@ -117,8 +118,8 @@ fn split_string(string: &str) -> Vec<&str> {
 
 fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_diagonal: isize, history: Vec<NegativeArray>) -> Vec<Edit> {
   // set constants to match algo
-  let N = first.len() as isize;
-  let M = second.len() as isize;
+  let first_length = first.len() as isize;
+  let second_length = second.len() as isize;
 
   let second_chars = split_string(second);
   let first_chars = split_string(first);
@@ -150,7 +151,7 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
       let mut x = furthest_path_at_d[*position];
       let mut y = x - position;
 
-      while (0 <= x && x < N) && (0 <= y && y < M)
+      while (0 <= x && x < first_length) && (0 <= y && y < second_length)
         && first_chars[x as usize] == second_chars[y as usize] {
           x += 1;
           y += 1;
@@ -233,9 +234,9 @@ fn simplify_edit_graph(edit_graph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
 
 // TODO Analyze weather an unamed tuple or HashMap Work better here
 pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Vec<NegativeArray>), String> {
-  let N = first.len() as isize;
-  let M = second.len() as isize;
-  let max = N + M;
+  let first_length = first.len() as isize;
+  let second_length = second.len() as isize;
+  let max = first_length + second_length;
 
   let second_chars = split_string(second);
   let first_chars = split_string(first);
@@ -254,8 +255,8 @@ pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize
       x = if down { v[diagonal + 1] } else { v[diagonal - 1] + 1 };
       y = x - diagonal;
 
-      while (0 <= x && x < N)
-        && (0 <= y && y < M)
+      while (0 <= x && x < first_length)
+        && (0 <= y && y < second_length)
         && first_chars[x as usize] == second_chars[y as usize]
       {
         x += 1;
@@ -263,7 +264,7 @@ pub fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize
       }
 
       v[diagonal] = x;
-      if x >= N && y >= M {
+      if x >= first_length && y >= second_length {
         let final_d = if d % 2 == 0 {d+1} else {d};
         history[final_d as usize] = v.clone();
         return Ok((d, diagonal, history));
@@ -313,8 +314,7 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
   response
 }
 
-pub fn
-  diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
+pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
   // let mut start = time::now();
   if first.len() == 0 && second.len() > 0{
     println!("here be dragons");
