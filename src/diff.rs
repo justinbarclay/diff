@@ -1,7 +1,7 @@
 extern crate time;
 
-mod array;
-use array::NegativeArray;
+use negative_array::NegativeArray;
+
 use std::collections::HashMap;
 use std::fmt;
 use time::now;
@@ -13,12 +13,13 @@ enum Operation {
   Null,
 }
 
-// be able to easily print enums
+/// Display Operation Enum as a String
 impl std::fmt::Display for Operation {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}", self)
   }
 }
+
 
 #[derive(Debug, Clone)]
 // our base unit of determining change
@@ -27,7 +28,6 @@ pub struct Edit {
   at: usize,
   to: usize,
 }
-
 
 fn split_string(string: &str) -> Vec<&str> {
   let col: Vec<_> = string.split("").collect();

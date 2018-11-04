@@ -1,6 +1,8 @@
 extern crate clap;
-extern crate diff;
 extern crate time;
+
+mod diff;
+mod negative_array;
 
 use clap::{App, Arg};
 use diff::{diff_greedy, Edit, decorate_differences};
