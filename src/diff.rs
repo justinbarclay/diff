@@ -21,7 +21,7 @@ impl std::fmt::Display for Operation {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 /// A Structure for describing change
 pub struct Edit {
   edit: Operation,
@@ -368,7 +368,7 @@ pub mod tests {
   }
 
   #[test]
-  fn simple_edit_graph(){
+  fn short_edit_sequence(){
     let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
                        NegativeArray { max: 3, arr: [-1, -1, 1, 1, 0, -1, -1].to_vec() },
                        NegativeArray { max: 0, arr: [-1].to_vec() }];
@@ -377,5 +377,16 @@ pub mod tests {
     assert_eq!(result.0, 1);
     assert_eq!(result.1, -1);
     assert_eq!(result.2, history);
+  }
+
+  #[test]
+  fn gen_edit_graph(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 3, arr: [-1, -1, 1, 1, 0, -1, -1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let edit_graph = vec![Edit { edit: Operation::Insert, at: 1, to: 1 }, Edit { edit: Operation::Insert, at: 2, to: 2 }];
+    let result = generate_edit_graph_loop("H", "Hi", 1, -2, history).unwrap();
+    println!("{:?}", result);
+    assert_eq!(result, edit_graph);
   }
 }
