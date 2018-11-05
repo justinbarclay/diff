@@ -3,10 +3,10 @@ use std::ops::{Index, IndexMut};
 #[derive(Debug, PartialEq, Clone)]
 /// A specialized Vector for easily working with the Meyers Diff Algorithm.
 pub struct NegativeArray {
-  /// The positive maximum index for the vector
-  max: isize,
-  /// The vector
-  arr: Vec<isize>,
+    /// The positive maximum index for the vector
+    pub max: isize,
+    /// The vector
+    pub arr: Vec<isize>,
 }
 
 // Allow accessing of NegativeArray through `[]`
