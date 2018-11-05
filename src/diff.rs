@@ -131,8 +131,8 @@ fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Ve
   let second_chars = split_string(second);
   let first_chars = split_string(first);
 
-  let mut v = NegativeArray::new(max as isize);
-  v[1] = 0;
+  let mut traversal_history = NegativeArray::new(max as isize);
+  traversal_history[1] = 0;
   let mut history: Vec<NegativeArray> = vec![NegativeArray::new(0); max as usize];
 
   for d in 0..max as isize {
@@ -141,8 +141,8 @@ fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Ve
       let mut x: isize;
       let mut y: isize;
 
-      let down = diagonal == -d || (diagonal != d && v[diagonal - 1] < v[diagonal + 1]);
-      x = if down { v[diagonal + 1] } else { v[diagonal - 1] + 1 };
+      let down = diagonal == -d || (diagonal != d && traversal_history[diagonal - 1] < traversal_history[diagonal + 1]);
+      x = if down { traversal_history[diagonal + 1] } else { traversal_history[diagonal - 1] + 1 };
       y = x - diagonal;
 
       while (0 <= x && x < first_length)
@@ -153,10 +153,10 @@ fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Ve
         y += 1;
       }
 
-      v[diagonal] = x;
+      traversal_history[diagonal] = x;
       if x >= first_length && y >= second_length {
         let final_d = if d % 2 == 0 {d+1} else {d};
-        history[final_d as usize] = v.clone();
+        history[final_d as usize] = traversal_history.clone();
         return Ok((d, diagonal, history));
       }
       diagonal += 2;
@@ -165,7 +165,7 @@ fn shortest_edit_sequence(first: &str, second: &str) -> Result<(isize, isize, Ve
     // We can ignore pushing even slices into the history
     // becuase only an even K will overwrite an even K
     if d % 2 == 1 {
-      history[d as usize] = v.clone();
+      history[d as usize] = traversal_history.clone();
     }
   }
   Err("Failed To Find Shortes Edit Sequence".to_string())
