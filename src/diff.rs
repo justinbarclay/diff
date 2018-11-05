@@ -357,13 +357,26 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit
   }
 }
 
-
 #[cfg(test)]
 pub mod tests {
   use super::*;
-  // #[test]
-  // fn creating_a_new_array() {
-  //   let arr = NegativeArray::new(10);
-  //   assert_eq!(arr.arr.len(), 21);
-  // }
+  #[test]
+  fn split_string_hello() {
+    let split = split_string("Hello");
+    let pre_split =  vec!["H", "e", "l", "l", "o"];
+    assert!(pre_split.len() == split.len());
+    assert_eq!(split, pre_split);
+  }
+
+  #[test]
+  fn simple_edit_graph(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 3, arr: [-1, -1, 1, 1, 0, -1, -1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let result = shortest_edit_sequence("H", "Hi").unwrap();
+    println!("result.2 {:?}", result.2);
+    assert_eq!(result.0, 1);
+    assert_eq!(result.1, -1);
+    assert_eq!(result.2, history);
+  }
 }
