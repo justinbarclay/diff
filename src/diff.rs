@@ -188,7 +188,6 @@ fn generate_edit_graph_loop(first: &str, second: &str, diff: isize, original_dia
   let mut new_diagonal: isize;
   let mut diagonal = original_diagonal;
   // Controlling borrowing scope by creating a closure
-
   while difference > -1 {
     let furthest_path_at_d = if difference % 2 == 0 {
       &history[(difference + 1) as usize]
@@ -340,11 +339,13 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit
     Ok(map)
   } else {
     let (difference, diagonal, history) = shortest_edit_sequence(first, second)?;
+    // println!("{:?}", history);
     // let mut finish = time::now();
     // println!("{:}", finish - start);
 
     // start = time::now();
     let edit_graph = generate_edit_graph_loop(first, second, difference - 1, diagonal, history)?;
+    // println!("{:?}", edit_graph);
     // finish = time::now();
     // println!("{:}", finish - start);
 
@@ -370,6 +371,33 @@ pub mod tests {
   #[test]
   fn short_edit_sequence(){
     let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 5, arr: [-1, -1, -1, -1, 2, 1, 0, -1, -1, -1, -1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let result = shortest_edit_sequence("H\n", "Hi\n").unwrap();
+    println!("result.2 {:?}", result.2);
+    assert_eq!(result.0, 1);
+    assert_eq!(result.1, -1);
+    assert_eq!(result.2, history);
+  }
+
+  #[test]
+  fn gen_edit_graph(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 5, arr: [-1, -1, -1, -1, 2, 1, 0, -1, -1, -1, -1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() },
+                       NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let edit_graph = vec![Edit { edit: Operation::Insert, at: 1, to: 1 }];
+    let result = generate_edit_graph_loop("H\n", "Hi\n", 0, -1, history).unwrap();
+    println!("{:?}", result);
+    assert_eq!(edit_graph, result);
+  }
+
+  #[test]
+  fn short_edit_sequence_without_newlines(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec()},
                        NegativeArray { max: 3, arr: [-1, -1, 1, 1, 0, -1, -1].to_vec() },
                        NegativeArray { max: 0, arr: [-1].to_vec() }];
     let result = shortest_edit_sequence("H", "Hi").unwrap();
@@ -380,13 +408,13 @@ pub mod tests {
   }
 
   #[test]
-  fn gen_edit_graph(){
-    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() },
+  fn gen_edit_graph_without_newlines(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec()},
                        NegativeArray { max: 3, arr: [-1, -1, 1, 1, 0, -1, -1].to_vec() },
                        NegativeArray { max: 0, arr: [-1].to_vec() }];
-    let edit_graph = vec![Edit { edit: Operation::Insert, at: 1, to: 1 }, Edit { edit: Operation::Insert, at: 2, to: 2 }];
-    let result = generate_edit_graph_loop("H", "Hi", 1, -2, history).unwrap();
+    let edit_graph = vec![Edit { edit: Operation::Insert, at: 1, to: 1 }];
+    let result = generate_edit_graph_loop("H\n", "Hi\n", 0, -1, history).unwrap();
     println!("{:?}", result);
-    assert_eq!(result, edit_graph);
+    assert_eq!(edit_graph, result);
   }
 }
