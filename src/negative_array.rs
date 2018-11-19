@@ -22,7 +22,7 @@ impl Index<isize> for NegativeArray {
 impl IndexMut<isize> for NegativeArray {
   fn index_mut<'a>(&'a mut self, offset: isize) -> &'a mut isize {
     let index = self.max + offset;
-    if index > 0 {
+    if index >= 0 {
       &mut self.arr[index as usize]
     } else {
       println!("offset too small");
