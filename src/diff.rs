@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::fmt;
 use time::now;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Operation {
   Insert,
   Delete,
@@ -20,7 +20,7 @@ impl std::fmt::Display for Operation {
   }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 /// A Structure for describing change
 pub struct Edit {
   pub edit: Operation,
@@ -324,7 +324,7 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
     let mut maybe_edit = edits_1.pop();
 
     for (index, character) in string.chars().enumerate() {
-      match maybe_edit.clone() {
+      match maybe_edit {
         Some(edit) => {
           if index == edit.at as usize {
             response.push_str(colour);
