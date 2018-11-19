@@ -341,18 +341,44 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
 /// describing: what positions in the first string that need to be deleted to match String 2,
 /// under the `delete` key, and what positions in the second string need to be inserted into the first string
 /// to trnasform String 1 into String 2, under the `insert` key
-pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit>>, String> {
+pub fn diff_greedy(first: &str, second: &str) -> Result<(i32, HashMap <String, Vec<Edit>>), String> {
   // let mut start = time::now();
-  if first.len() == 0 && second.len() > 0{
+  // Let's save ourselves some function calls if possible
+  if first.is_empty() && second.is_empty() {
     let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
-    map.insert(String::from("insert"), vec![Edit{edit: Operation::Insert, at: 0, to: second.len()}; 1]);
-    map.insert(String::from("delete"), Vec::new());
-    Ok(map)
-  } else if first.len() > 0 && second.len() == 0{
-    let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
-    map.insert(String::from("delete"), vec![Edit{edit: Operation::Delete , at: 0, to: first.len()}; 1]);
     map.insert(String::from("insert"), Vec::new());
-    Ok(map)
+    map.insert(String::from("delete"), Vec::new());
+    Ok((0, map))
+  } else if first.is_empty() && second.len() > 0 {
+    let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
+    map.insert(
+      String::from("insert"),
+      vec![
+        Edit {
+          edit: Operation::Insert,
+          at: 0,
+          to: second.len()
+        };
+        1
+      ],
+    );
+    map.insert(String::from("delete"), Vec::new());
+    Ok((second.len() as i32, map))
+  } else if first.len() > 0 && second.is_empty() {
+    let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
+    map.insert(
+      String::from("delete"),
+      vec![
+        Edit {
+          edit: Operation::Delete,
+          at: 0,
+          to: first.len()
+        };
+        1
+      ],
+    );
+    map.insert(String::from("insert"), Vec::new());
+    Ok((first.len() as i32, map))
   } else {
     let (difference, diagonal, history) = shortest_edit_sequence(first, second)?;
     // println!("{:?}", history);
@@ -369,7 +395,7 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<HashMap<String, Vec<Edit
     let simple_edit_graph = simplify_edit_graph(edit_graph);
     // finish = time::now();
     // println!("{:}", finish - start);
-    Ok(simple_edit_graph)
+    Ok((difference as i32, simple_edit_graph))
   }
 }
 
