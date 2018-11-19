@@ -309,28 +309,34 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
   let green = "\x1b[32m";
 
   let colour = if edit_type == "insert" { green } else { red };
+  let starting_symbol = if edit_type == "insert" { "+ " } else { "- " };
   let mut response = String::new();
+
+  response.push_str(colour);
+  response.push_str(starting_symbol);
+  response.push_str(end_colour);
+
   if edits.is_empty() {
-    return string.to_string();
-  }
+    response.push_str(string);
+  } else {
+    let mut edits_1 = edits.to_vec();
+    edits_1.reverse();
+    let mut maybe_edit = edits_1.pop();
 
-  let mut edits_1 = edits.to_vec();
-  edits_1.reverse();
-  let mut maybe_edit = edits_1.pop();
-
-  for (index, character) in string.chars().enumerate() {
-    match maybe_edit.clone() {
-      Some(edit) => {
-        if index == edit.at as usize {
-          response.push_str(colour);
+    for (index, character) in string.chars().enumerate() {
+      match maybe_edit.clone() {
+        Some(edit) => {
+          if index == edit.at as usize {
+            response.push_str(colour);
+          }
+          response.push(character);
+          if index == edit.to as usize {
+            response.push_str(end_colour);
+            maybe_edit = edits_1.pop();
+          }
         }
-        response.push(character);
-        if index == edit.to as usize {
-          response.push_str(end_colour);
-          maybe_edit = edits_1.pop();
-        }
+        None => response.push(character),
       }
-      None => response.push(character),
     }
   }
   response
@@ -340,7 +346,7 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
 /// describing: what positions in the first string that need to be deleted to match String 2,
 /// under the `delete` key, and what positions in the second string need to be inserted into the first string
 /// to trnasform String 1 into String 2, under the `insert` key
-pub fn diff_greedy(first: &str, second: &str) -> Result<(i32, HashMap <String, Vec<Edit>>), String> {
+pub fn diff_greedy(first: &str, second: &str) -> Result<(i32, HashMap<String, Vec<Edit>>), String> {
   // let mut start = time::now();
   // Let's save ourselves some function calls if possible
   if first.is_empty() && second.is_empty() {
@@ -450,23 +456,57 @@ pub mod tests {
   #[test]
   fn short_edit_sequence_where_they_are_the_same() {
     let history = vec![
-      NegativeArray { max: 0, arr: [-1].to_vec() },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
       NegativeArray {
         max: 10,
         arr: [
           -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        ].to_vec(),
+        ]
+        .to_vec(),
       },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
-      NegativeArray { max: 0, arr: [-1].to_vec() },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
+      NegativeArray {
+        max: 0,
+        arr: [-1].to_vec(),
+      },
     ];
     let result = shortest_edit_sequence("Hello", "Hello").unwrap();
     assert_eq!(result.0, 0);
@@ -481,7 +521,7 @@ pub mod tests {
     assert_eq!(result.1, 0);
   }
 
-    #[test]
+  #[test]
   fn short_edit_sequence_for_empty_strings() {
     let result = shortest_edit_sequence(&"", &"1").unwrap();
     assert_eq!(result.0, 1);
@@ -593,11 +633,15 @@ pub mod tests {
   }
 
   #[test]
-  fn greedy_diff(){
+  fn greedy_diff() {
     let mut expected_differences: HashMap<String, Vec<Edit>> = HashMap::new();
     expected_differences.insert(String::from("insert"), Vec::new());
     expected_differences.insert(String::from("delete"), Vec::new());
-    expected_differences.get_mut("insert").unwrap().push(Edit { edit: Operation::Insert, at: 1, to: 1 });
+    expected_differences.get_mut("insert").unwrap().push(Edit {
+      edit: Operation::Insert,
+      at: 1,
+      to: 1,
+    });
     let (number_of_differences, differences) = diff_greedy("H", "Hi").unwrap();
     assert_eq!(number_of_differences, 1);
     assert_eq!(differences, expected_differences);

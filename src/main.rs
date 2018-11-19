@@ -63,14 +63,5 @@ fn main() {
     }
   };
 
-  // let differences = match diff_greedy(&files[0], &files[1]) {
-  //   Ok(success) => success,
-  //   Err(e) =>  {
-  //     return;},
-  // };
-
-  // print!("{}", decorate_differences(&files[0], "delete", &differences["delete"]));
-  // print!("\n------------------\n");
-  // println!("{}", decorate_differences(&files[1], "insert", &differences["insert"]));
   println!("{}", diff_files(&files[0], &files[1]))
 }
