@@ -7,7 +7,7 @@ use std::fmt;
 use time::now;
 
 #[derive(Debug, PartialEq, Clone)]
-enum Operation {
+pub enum Operation {
   Insert,
   Delete,
   Null,
@@ -20,13 +20,12 @@ impl std::fmt::Display for Operation {
   }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 /// A Structure for describing change
 pub struct Edit {
-  edit: Operation,
-  at: usize,
-  to: usize,
+  pub edit: Operation,
+  pub at: usize,
+  pub to: usize,
 }
 
 /// A helper function for splitting a string into a vector of characters
