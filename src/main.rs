@@ -2,10 +2,12 @@ extern crate clap;
 extern crate time;
 
 mod diff;
+mod diff_file;
 mod negative_array;
 
 use clap::{App, Arg};
 use diff::{diff_greedy, Edit, decorate_differences};
+use diff_file::diff_files;
 use std::fs;
 
 fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
@@ -61,13 +63,14 @@ fn main() {
     }
   };
 
-    let differences = match diff_greedy(&files[0], &files[1]) {
-        Ok(success) => success,
-        Err(e) =>  {
-            return;},
-    };
+  // let differences = match diff_greedy(&files[0], &files[1]) {
+  //   Ok(success) => success,
+  //   Err(e) =>  {
+  //     return;},
+  // };
 
-  print!("{}", decorate_differences(&files[0], "delete", &differences["delete"]));
-  print!("\n------------------\n");
-  println!("{}", decorate_differences(&files[1], "insert", &differences["insert"]));
+  // print!("{}", decorate_differences(&files[0], "delete", &differences["delete"]));
+  // print!("\n------------------\n");
+  // println!("{}", decorate_differences(&files[1], "insert", &differences["insert"]));
+  println!("{}", diff_files(&files[0], &files[1]))
 }
