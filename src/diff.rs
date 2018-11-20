@@ -189,6 +189,9 @@ fn generate_edit_graph_loop(
   history: Vec<NegativeArray>,
 ) -> Result<Vec<Edit>, String> {
   // set constants to match algo
+  if diff == -1{
+    return Ok(vec![])
+  }
   let first_length = first.len() as isize;
   let second_length = second.len() as isize;
 
@@ -515,6 +518,23 @@ pub mod tests {
   }
 
   #[test]
+  fn a_short_squence_where_they_are_the_same() {
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() }, NegativeArray { max: 2, arr: [-1, -1, 1, 0, -1].to_vec() }, NegativeArray { max: 0, arr: [-1].to_vec() }, NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let result = shortest_edit_sequence("H", "H").unwrap();
+    assert_eq!(result.0, 0);
+    assert_eq!(result.1, 0);
+    assert_eq!(result.2, history);
+  }
+
+  #[test]
+  fn gen_an_edit_sequence_for_a_diff_of_zero(){
+    let history = vec![NegativeArray { max: 0, arr: [-1].to_vec() }, NegativeArray { max: 2, arr: [-1, -1, 1, 0, -1].to_vec() }, NegativeArray { max: 0, arr: [-1].to_vec() }, NegativeArray { max: 0, arr: [-1].to_vec() }];
+    let edit_graph = vec![];
+    let result = generate_edit_graph_loop("H", "H", -1,0, history ).unwrap();
+    assert_eq!(result, edit_graph);
+  }
+
+  #[test]
   fn short_edit_sequence_where_nothing_matches() {
     let result = shortest_edit_sequence(&"Hze", &"Nod").unwrap();
     assert_eq!(result.0, 6);
@@ -522,7 +542,7 @@ pub mod tests {
   }
 
   #[test]
-  fn short_edit_sequence_for_empty_strings() {
+  fn short_edit_sequence_for_empty_string() {
     let result = shortest_edit_sequence(&"", &"1").unwrap();
     assert_eq!(result.0, 1);
     assert_eq!(result.1, -1);
