@@ -18,7 +18,7 @@ pub fn diff_files(file_one: &str, file_two: &str)-> Result<Vec<(i32, HashMap<Str
 
   if file_one_lines.len() > file_two_lines.len(){
     let remaining = file_one_lines.len() - file_two_lines.len();
-    for line in file_one_lines[remaining .. file_one_lines.len()].iter(){
+    for line in file_one_lines[file_one_lines.len() - remaining .. file_one_lines.len()].iter(){
       let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
       map.insert(String::from("insert"), Vec::new());
       map.insert(String::from("delete"), vec![Edit{edit: Operation::Delete,
@@ -28,7 +28,7 @@ pub fn diff_files(file_one: &str, file_two: &str)-> Result<Vec<(i32, HashMap<Str
     }
   } else if file_two_lines.len() > file_one_lines.len(){
     let remaining = file_two_lines.len() - file_one_lines.len();
-    for line in file_two_lines[remaining .. file_two_lines.len()].iter(){
+    for line in file_two_lines[file_two_lines.len() - remaining .. file_two_lines.len()].iter(){
       let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
       map.insert(String::from("delete"), Vec::new());
       map.insert(String::from("insert"), vec![Edit{edit: Operation::Insert,
@@ -61,16 +61,20 @@ pub fn differences_by_line(file_one: &str, file_two: &str, edits: Vec<(i32, Hash
 
   if file_one_lines.len() > file_two_lines.len(){
     let remaining = file_one_lines.len() - file_two_lines.len();
-    for (i, line) in file_one_lines[remaining .. file_one_lines.len()].iter().enumerate(){
+    for (i, line) in file_one_lines[file_one_lines.len() - remaining .. file_one_lines.len()].iter().enumerate(){
       let index = i+remaining;
       result.push_str(&decorate_differences(line, "delete", &edits[index].1["delete"]));
+      result.push('\n');
     }
   } else if file_two_lines.len() > file_one_lines.len(){
     let remaining = file_two_lines.len() - file_one_lines.len();
-    for (i, line) in file_two_lines[remaining .. file_two_lines.len()].iter().enumerate(){
+    println!("Remaining {}", remaining);
+    for (i, line) in file_two_lines[file_two_lines.len() - remaining .. file_two_lines.len()].iter().enumerate(){
       let index = i+remaining;
       result.push_str(&decorate_differences(line, "insert", &edits[index].1["insert"]));
+      result.push('\n');
     }
   }
+  result.pop();
   result
 }
