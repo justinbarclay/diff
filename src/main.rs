@@ -7,7 +7,7 @@ mod negative_array;
 
 use clap::{App, Arg};
 use diff::{diff_greedy, Edit, decorate_differences};
-use diff_file::diff_files;
+use diff_file::{diff_files, differences_by_line};
 use std::fs;
 
 fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
@@ -62,6 +62,6 @@ fn main() {
       return;
     }
   };
-
-  println!("{}", diff_files(&files[0], &files[1]))
+  let edits = diff_files(&files[0], &files[1]).unwrap();
+  println!("{}", differences_by_line(&files[0], &files[1], edits));
 }
