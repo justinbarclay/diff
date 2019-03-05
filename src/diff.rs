@@ -125,12 +125,15 @@ fn shortest_edit_sequence(
   first: &str,
   second: &str,
 ) -> Result<(isize, isize, Vec<NegativeArray>), String> {
-  let first_length = first.len() as isize;
-  let second_length = second.len() as isize;
-  let max = first_length + second_length;
 
   let second_chars = split_string(second);
   let first_chars = split_string(first);
+
+  let first_length = first_chars.len() as isize;
+  let second_length = second_chars.len() as isize;
+  println!("first length: {:?}", first_length);
+  println!("second length: {:?}", second_length);
+  let max = first_length + second_length;
 
   let mut traversal_history = NegativeArray::new(max as isize);
   traversal_history[1] = 0;
@@ -153,7 +156,8 @@ fn shortest_edit_sequence(
 
       while (0 <= x && x < first_length)
         && (0 <= y && y < second_length)
-        && first_chars[x as usize] == second_chars[y as usize]
+        && (first_chars[x as usize] ==
+            second_chars[y as usize])
       {
         x += 1;
         y += 1;
@@ -283,18 +287,19 @@ fn simplify_edit_graph(edit_graph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
 
   for edit in edit_graph {
     // If previous
-    let mut operation_string = match edit.edit {
+    let operation_string = match edit.edit {
       Operation::Insert => String::from("insert"),
       Operation::Delete => String::from("delete"),
       Operation::Null => String::from("null"),
     };
     if previous_edit.edit == edit.edit && edit.at > 0 && previous_edit.at == edit.at - 1 {
       let mut edit_range = map
-        .get_mut(&operation_string)
-        .unwrap()
-        .pop()
-        .unwrap()
-        .clone();
+                           .get_mut(&operation_string)
+                           .unwrap()
+                           .pop()
+                           .unwrap()
+                           .clone();
+
       edit_range.to = edit.at;
       map.get_mut(&operation_string).unwrap().push(edit_range);
     } else {
