@@ -6,8 +6,8 @@ mod diff_file;
 mod negative_array;
 
 use clap::{App, Arg};
-use diff::{diff_greedy, Edit, decorate_differences};
-use diff_file::{diff_files, differences_by_line};
+
+use crate::diff_file::{diff_files, differences_by_line};
 use std::fs;
 
 fn validate_files(file_one: &str, file_two: &str) -> Result<Vec<String>, std::io::Error> {
@@ -53,7 +53,7 @@ fn main() {
 
   let file_one = matches.value_of("FILE1").unwrap();
   let file_two = matches.value_of("FILE2").unwrap();
-  let algo = matches.value_of("ALGORITHM").unwrap_or("greedy");
+  let _algo = matches.value_of("ALGORITHM").unwrap_or("greedy");
 
   let files = match validate_files(file_one, file_two) {
     Ok(files) => files,

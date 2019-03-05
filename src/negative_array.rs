@@ -80,7 +80,7 @@ pub mod tests {
 
   #[test]
   fn indexing_an_array() {
-    let mut arr = NegativeArray::new(10);
+    let arr = NegativeArray::new(10);
     assert_eq!(arr[-1], -1);
   }
 

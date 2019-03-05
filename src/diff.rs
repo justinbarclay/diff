@@ -1,10 +1,10 @@
 extern crate time;
 
-use negative_array::NegativeArray;
+use crate::negative_array::NegativeArray;
 
 use std::collections::HashMap;
 use std::fmt;
-use time::now;
+
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Operation {

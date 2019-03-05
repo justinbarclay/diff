@@ -1,4 +1,4 @@
-use diff::{diff_greedy, Edit, decorate_differences, Operation};
+use crate::diff::{diff_greedy, Edit, decorate_differences, Operation};
 use std::collections::HashMap;
 
 pub fn diff_files(file_one: &str, file_two: &str)-> Result<Vec<(i32, HashMap<String, Vec<Edit>>)>, String> {
