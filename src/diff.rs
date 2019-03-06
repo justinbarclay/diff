@@ -280,7 +280,7 @@ pub fn diff_greedy(first: &str, second: &str) -> Result<(i32, HashMap<String, Ve
     map.insert(String::from("insert"), Vec::new());
     map.insert(String::from("delete"), Vec::new());
     Ok((0, map))
-  } else if first.is_empty() && second.len() > 0 {
+  } else if first.is_empty() && !second.is_empty() {
     let mut map: HashMap<String, Vec<Edit>> = HashMap::new();
     map.insert(
       String::from("insert"),
