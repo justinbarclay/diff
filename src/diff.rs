@@ -29,10 +29,9 @@ pub struct Edit {
 }
 
 /// A helper function for splitting a string into a vector of characters
-fn split_string(string: &str) -> Vec<&str> {
-  let col: Vec<_> = string.split("").collect();
-  let end = col.len() - 1;
-  col[1..end].to_vec()
+fn split_string(string: &str) -> Vec<char> {
+  let col: Vec<_> = string.chars().collect();
+  col.to_vec()
 }
 
 /// The greedy algorithm for diffing strings. Returns a three-tuple of:
