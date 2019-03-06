@@ -37,11 +37,11 @@ impl NegativeArray {
     if max >= 0 {
       NegativeArray {
         max,
-        // We must set default value to -1 because then it is always outside of the bounds of a string
+        // We must set default value to -1 because then it is always outside of the bounds of a string, which is between 0 and and length - 1.
         arr: vec![-1; (1 + max * 2) as usize],
       }
     } else {
-      // Some default value, when I want to do more ceremony may eventually want to return an error
+      // Some default value, when I want to do more ceremony may eventually want to throw an error
       NegativeArray {
         max: 0,
         arr: vec![-1; 0],
