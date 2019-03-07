@@ -74,7 +74,7 @@ pub fn differences_by_line(file_one: &str, file_two: &str, edits: Vec<(i32, Hash
     }
   } else if file_two_lines.len() > file_one_lines.len(){
     let remaining = file_two_lines.len() - file_one_lines.len();
-    println!("Remaining {}", remaining);
+
     for (i, line) in file_two_lines[file_two_lines.len() - remaining .. file_two_lines.len()].iter().enumerate(){
       let index = i+remaining;
       result.push_str(&decorate_differences(line, "insert", &edits[index].1["insert"]));
