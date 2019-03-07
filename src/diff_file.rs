@@ -1,6 +1,10 @@
 use crate::diff::{diff_greedy, Edit, decorate_differences, Operation};
 use std::collections::HashMap;
 
+
+// Compare each line of file one and file two, if one file has more lines then the other then assume all lines
+// that are more than the other file are either all inserts or deletes. This isn't an ideal implementation
+// of diffing files as it ignores when lines are moved down the text.
 pub fn diff_files(file_one: &str, file_two: &str)-> Result<Vec<(i32, HashMap<String, Vec<Edit>>)>, String> {
   let file_one_lines: Vec<&str> = file_one.split("\n").collect();
   let file_two_lines: Vec<&str> = file_two.split("\n").collect();
@@ -40,10 +44,12 @@ pub fn diff_files(file_one: &str, file_two: &str)-> Result<Vec<(i32, HashMap<Str
   Ok(difference_collection)
 }
 
-
+// Goes through each line in file_one and file_two and applies decoration to the insertions and deletions in each line
 pub fn differences_by_line(file_one: &str, file_two: &str, edits: Vec<(i32, HashMap<String, Vec<Edit>>)>) -> String {
+
   let file_one_lines: Vec<&str> = file_one.split("\n").collect();
   let file_two_lines: Vec<&str> = file_two.split("\n").collect();
+
   let combined_lines = file_one_lines.iter().zip(file_two_lines.iter()).zip(edits.iter());
   let mut result = String::new();
 

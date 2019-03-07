@@ -37,6 +37,7 @@ fn main() {
         .long("algo")
         .value_name("algo")
         .help(
+          // This currently isn't implemented, but I plan on it
           "Sets the algorithm type to the \"greedy\" or \"linear\" version Myer's diff algorithm",
         ).required(false),
     ).arg(
