@@ -1,0 +1,4 @@
+* RDiff
+#+BEGIN_QUOTE
+A CLI for displaying the textual differences between two files.
+#+END_QUOTE
