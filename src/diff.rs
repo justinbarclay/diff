@@ -248,9 +248,9 @@ fn simplify_edit_graph(edit_graph: Vec<Edit>) -> HashMap<String, Vec<Edit>> {
     } else {
       map.get_mut(&operation_string).unwrap().push(edit);
     }
-
     previous_edit = edit;
   }
+
   map
 }
 
@@ -292,6 +292,7 @@ pub fn decorate_differences(string: &str, edit_type: &str, edits: &[Edit]) -> St
       }
     }
   }
+
   response
 }
 
