@@ -336,7 +336,7 @@ pub mod tests {
   #[test]
   fn split_string_hello() {
     let split = split_string("Hello");
-    let pre_split = vec!["H", "e", "l", "l", "o"];
+    let pre_split = vec!['H', 'e', 'l', 'l', 'o'];
     assert!(pre_split.len() == split.len());
     assert_eq!(split, pre_split);
   }
